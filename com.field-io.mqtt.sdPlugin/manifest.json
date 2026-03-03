@@ -1,0 +1,70 @@
+{
+	"$schema": "https://schemas.elgato.com/streamdeck/plugins/manifest.json",
+	"Actions": [
+		{
+			"Icon": "images/action",
+			"Name": "bi0s MQTT",
+			"UUID": "com.field-io.mqtt.action",
+			"States": [
+				{
+					"Image": "images/actionDefaultImage",
+					"TitleAlignment": "middle",
+					"FontSize": 16
+				}
+			],
+			"SupportedInMultiActions": true,
+			"Tooltip": "Your small Stream Deck MQTT Client."
+		},
+		{
+			"Icon": "images/action",
+			"Name": "MQTT Dial",
+			"UUID": "com.field-io.mqtt.dial",
+			"Controllers": [
+				"Keypad",
+				"Encoder"
+			],
+			"Encoder": {
+				"background": "images/actionDefaultImage",
+				"layout": "$B1",
+				"TriggerDescription": {
+					"Push": "Send MQTT",
+					"Rotate": "Adjust value",
+					"Touch": "Send MQTT"
+				}
+			},
+			"States": [
+				{
+					"Image": "images/actionDefaultImage",
+					"TitleAlignment": "middle",
+					"FontSize": 16
+				}
+			],
+			"PropertyInspectorPath": "pi.html"
+		}
+	],
+	"Author": "Field.IO",
+	"CodePath": "index.html",
+	"PropertyInspectorPath": "pi.html",
+	"Description": "Your small Stream Deck MQTT Client. To use it, you need to enable WS (WebSocket) in your MQTT Broker. You need to have a broker that connects MQTT via Websockets",
+	"Category": "Field IO MQTT",
+	"CategoryIcon": "images/action",
+	"Icon": "images/plugin",
+	"Name": "Field IO MQTT",
+	"URL": "http://field.io",
+	"UUID": "com.field-io.mqtt",
+	"Version": "1.6.12.0",
+	"OS": [
+		{
+			"Platform": "mac",
+			"MinimumVersion": "10.11"
+		},
+		{
+			"Platform": "windows",
+			"MinimumVersion": "10"
+		}
+	],
+	"SDKVersion": 2,
+	"Software": {
+		"MinimumVersion": "7.0"
+	}
+}

@@ -812,8 +812,12 @@ const StreamDeck = (function () {
 
                 if (!jsonObj.hasOwnProperty('action')) {
                     m = jsonObj.event;
+
+
                     // console.log('%c%s', 'color: white; background: red; font-size: 12px;', '[common.js]onmessage:', m);
-                } else {
+                }
+                else
+                {
                     switch (inMessageType) {
                     case 'registerPlugin':
                         m = jsonObj['action'] + '.' + jsonObj['event'];
