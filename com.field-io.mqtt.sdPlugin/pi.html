@@ -33,6 +33,19 @@
         </select>
     </div>
 
+    <div class="sdpi-item">
+        <div class="sdpi-item-label">Continuous Send</div>
+        <select class="sdpi-item-value" id="continuousSend">
+            <option value="false">No</option>
+            <option value="true">Yes</option>
+        </select>
+    </div>
+
+    <div class="sdpi-item">
+        <div class="sdpi-item-label">Send Rate (Hz)</div>
+        <input class="sdpi-item-value" id="continuousHz" placeholder="1">
+    </div>
+
     <div class="sdpi-heading">MQTT</div>
 
     <div class="sdpi-item">
@@ -75,7 +88,7 @@
 
     <div class="sdpi-item">
         <div class="sdpi-item-label">Message</div>
-        <input class="sdpi-item-value" id="valMessage" placeholder="Json Example: {&quot;dial&quot;: {{value}}}">
+        <input class="sdpi-item-value" id="valMessage" placeholder="Json Example: {&quot;dial&quot;: {{value}}, &quot;delta&quot;: {{delta}}, &quot;ts&quot;: &quot;{{timestamp_utc}}&quot;}">
     </div>
 
     <div class="sdpi-item">
@@ -87,7 +100,7 @@
     </div>
 
     <div class="sdpi-item">
-        <button class="sdpi-item-value" onclick="save()">Save</button>
+        <button onclick="save()">Save</button>
     </div>
 
 </div>
@@ -97,6 +110,7 @@
         $SD.on('connected', json => {
             const s = Utils.getProp(json, 'actionInfo.payload.settings', {});
             document.querySelectorAll(".sdpi-item-value").forEach(el => {
+                if (!el.id) return;
                 if (s[el.id] !== undefined) el.value = s[el.id];
             });
         });
@@ -105,6 +119,7 @@
     function save() {
         const payload = {};
         document.querySelectorAll(".sdpi-item-value").forEach(el => {
+            if (!el.id) return;
             payload[el.id] = el.value;
         });
         $SD.api.sendToPlugin($SD.uuid, $SD.actionInfo.action, payload);

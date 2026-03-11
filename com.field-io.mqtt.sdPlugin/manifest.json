@@ -52,7 +52,7 @@
 	"Name": "Field IO MQTT",
 	"URL": "http://field.io",
 	"UUID": "com.field-io.mqtt",
-	"Version": "1.6.12.0",
+	"Version": "1.243.9.9",
 	"OS": [
 		{
 			"Platform": "mac",
