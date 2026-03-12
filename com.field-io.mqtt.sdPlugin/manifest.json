@@ -3,7 +3,7 @@
 	"Actions": [
 		{
 			"Icon": "images/action",
-			"Name": "bi0s MQTT",
+			"Name": "Field.IO MQTT",
 			"UUID": "com.field-io.mqtt.action",
 			"States": [
 				{
@@ -52,7 +52,7 @@
 	"Name": "Field IO MQTT",
 	"URL": "http://field.io",
 	"UUID": "com.field-io.mqtt",
-	"Version": "1.243.9.9",
+	"Version": "2.0.0.0",
 	"OS": [
 		{
 			"Platform": "mac",

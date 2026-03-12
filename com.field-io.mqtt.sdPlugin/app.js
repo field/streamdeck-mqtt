@@ -191,10 +191,35 @@ const MqttManager = {
         if (!state) return;
         if (token !== undefined && token !== null && state.token !== token) return;
 
-        const currentValue = Number.isFinite(state.currentValue) ? state.currentValue : Number(state.currentValue) || 0;
+        const rawValue = Number.isFinite(state.currentValue) ? state.currentValue : Number(state.currentValue) || 0;
+        const inputNoiseEnabled = state.settings.continuousNoiseInput === "true";
+        const inputNoiseAmp = getFiniteNumber(state.settings.continuousNoiseInputAmp, 0);
+
+        let baseValue = rawValue;
+        if (inputNoiseEnabled && inputNoiseAmp > 0) {
+            baseValue = normalizeDialValue(applyUniformNoise(rawValue, inputNoiseAmp), state.settings);
+        }
+
+        const valueNoiseEnabled = state.settings.continuousNoiseValue === "true";
+        const valueNoiseAmp = getFiniteNumber(state.settings.continuousNoiseValueAmp, 0);
+
+        let valueForMessage = baseValue;
+        if (valueNoiseEnabled && valueNoiseAmp > 0) {
+            valueForMessage = normalizeDialValue(applyUniformNoise(baseValue, valueNoiseAmp), state.settings);
+        } else {
+            valueForMessage = normalizeDialValue(baseValue, state.settings);
+        }
+
         const lastSentValue = Number.isFinite(state.lastSentValue) ? state.lastSentValue : Number(state.lastSentValue) || 0;
-        const delta = computeDialDelta(currentValue, lastSentValue, state.settings);
-        const messageText = renderDialMessage(state.settings.valMessage, currentValue, delta);
+        let delta = computeDialDelta(valueForMessage, lastSentValue, state.settings);
+
+        // Fix: if base value is unchanged and noise is enabled, ensure delta reflects the change from the last sent noisy value.
+        // If deltas are coming out as 0 despite noise, it might be due to rounding in computeDialDelta (though it currently doesn't round).
+        // However, if the user specifically complained about "deltas being the same", 
+        // they might be seeing 0 deltas when they expect noisy ones if lastSentValue was not tracking noise.
+        // The current implementation above (state.lastSentValue = valueForMessage) ALREADY handles this for random walk.
+
+        const messageText = renderDialMessage(state.settings.valMessage, valueForMessage, delta, baseValue);
 
         this.send(
             context,
@@ -206,7 +231,13 @@ const MqttManager = {
             null,
             { coalesceKey: `continuous:${context}` }
         );
-        state.lastSentValue = currentValue;
+
+        const preserveNoiseForDelta = state.settings.continuousNoiseInput === "true" || state.settings.continuousNoiseValue === "true";
+        if (preserveNoiseForDelta) {
+            state.lastSentValue = valueForMessage;
+        } else {
+            state.lastSentValue = baseValue;
+        }
     },
 
     startContinuous(ctx, settings, intervalMs, initialValue) {
@@ -293,11 +324,13 @@ function getUtcTimestampIso() {
     return new Date().toISOString();
 }
 
-function renderDialMessage(template, value, delta) {
+function renderDialMessage(template, value, delta, inputValue) {
     const timestampUtc = getUtcTimestampIso();
     let msg = template || "";
     msg = msg.replace(/\{\{\s*value\s*\}\}/g, String(value));
     msg = msg.replace(/\{\{\s*delta\s*\}\}/g, String(delta));
+    // `input` can differ from `value` when continuous output-noise is enabled.
+    msg = msg.replace(/\{\{\s*input\s*\}\}/g, String(inputValue));
     // UTC timestamp aliases: {{timestamp_utc}}, {{timestampUtc}}, {{timestamp}}
     msg = msg.replace(/\{\{\s*timestamp_utc\s*\}\}/gi, timestampUtc);
     msg = msg.replace(/\{\{\s*timestampUtc\s*\}\}/gi, timestampUtc);
@@ -333,6 +366,34 @@ function computeDialDelta(currentValue, previousValue, settings) {
     }
 
     return delta;
+}
+
+function getFiniteNumber(value, fallback) {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : fallback;
+}
+
+function normalizeDialValue(value, settings) {
+    const v = getFiniteNumber(value, 0);
+    let min = Number(settings?.min);
+    let max = Number(settings?.max);
+    if (!Number.isFinite(min)) min = 0;
+    if (!Number.isFinite(max)) max = 100;
+
+    if (settings?.wrap === "true" && max > min) {
+        const span = max - min + 1;
+        let pos = (v - min) % span;
+        if (pos < 0) pos += span;
+        return min + pos;
+    }
+
+    return Math.max(min, Math.min(max, v));
+}
+
+function applyUniformNoise(value, amplitude) {
+    const amp = getFiniteNumber(amplitude, 0);
+    if (amp <= 0) return value;
+    return value + ((Math.random() * 2 - 1) * amp);
 }
 
 const action = {
@@ -395,7 +456,11 @@ const continuousConfigKeys = [
     "valClientId",
     "valTopic",
     "valMessage",
-    "valRetain"
+    "valRetain",
+    "continuousNoiseInput",
+    "continuousNoiseInputAmp",
+    "continuousNoiseValue",
+    "continuousNoiseValueAmp"
 ];
 
 const TimerBridge = {
@@ -498,7 +563,7 @@ const TimerBridge = {
 };
 
 function sendDialMqtt(jsonObj, settings, value, delta, onSent) {
-    const msg = renderDialMessage(settings.valMessage, value, delta);
+    const msg = renderDialMessage(settings.valMessage, value, delta, value);
 
     MqttManager.send(jsonObj, settings, settings.valTopic, msg, settings.valRetain, onSent);
 }

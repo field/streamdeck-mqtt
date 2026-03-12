@@ -46,6 +46,34 @@
         <input class="sdpi-item-value" id="continuousHz" placeholder="1">
     </div>
 
+    <div class="sdpi-heading">Continuous Noise</div>
+
+    <div class="sdpi-item">
+        <div class="sdpi-item-label">Input Noise</div>
+        <select class="sdpi-item-value" id="continuousNoiseInput">
+            <option value="false">No</option>
+            <option value="true">Yes</option>
+        </select>
+    </div>
+
+    <div class="sdpi-item">
+        <div class="sdpi-item-label">Input Noise +/-</div>
+        <input class="sdpi-item-value" id="continuousNoiseInputAmp" placeholder="0">
+    </div>
+
+    <div class="sdpi-item">
+        <div class="sdpi-item-label">Value Noise</div>
+        <select class="sdpi-item-value" id="continuousNoiseValue">
+            <option value="false">No</option>
+            <option value="true">Yes</option>
+        </select>
+    </div>
+
+    <div class="sdpi-item">
+        <div class="sdpi-item-label">Value Noise +/-</div>
+        <input class="sdpi-item-value" id="continuousNoiseValueAmp" placeholder="0">
+    </div>
+
     <div class="sdpi-heading">MQTT</div>
 
     <div class="sdpi-item">
@@ -88,7 +116,7 @@
 
     <div class="sdpi-item">
         <div class="sdpi-item-label">Message</div>
-        <input class="sdpi-item-value" id="valMessage" placeholder="Json Example: {&quot;dial&quot;: {{value}}, &quot;delta&quot;: {{delta}}, &quot;ts&quot;: &quot;{{timestamp_utc}}&quot;}">
+        <input class="sdpi-item-value" id="valMessage" placeholder="Json Example: {&quot;value&quot;: {{value}}, &quot;input&quot;: {{input}}, &quot;delta&quot;: {{delta}}, &quot;ts&quot;: &quot;{{timestamp_utc}}&quot;}">
     </div>
 
     <div class="sdpi-item">
